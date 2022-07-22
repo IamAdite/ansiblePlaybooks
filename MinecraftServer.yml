@@ -1,4 +1,6 @@
-
+# This playbook basically installs vanilla minecraft 1.19 server and makes a service for it. Change variables according to you.
+# Playbook was created as test so security wasnt taken in consideration — everything is going to be in /home/$USER directory and it runs under the root. 
+# Use at your own risk.
 ---
 - name: Install Minecraft Server and Start it as service
   hosts: minecraft_servers
