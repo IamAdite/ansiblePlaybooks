@@ -1,5 +1,5 @@
 # Playbook that isntalls Apache and moves Index.html page to the servers.
-# Also Jinja2 templating is used.
+# Also Jinja2 templating for Index.html is used.
 ---
 - name: Install Apache and Upload my Web Page
   hosts: test_servers
