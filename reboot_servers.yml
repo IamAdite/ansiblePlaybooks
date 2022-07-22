@@ -1,3 +1,4 @@
+# Simple playbook to reboot all specified servers
 ---
 - name: playbook to reboot some servers
   hosts: "{{ my_hosts }}"
