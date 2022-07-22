@@ -1,3 +1,4 @@
+# Simple playbook to install Docker, make docker group and run hello-world container.
 ---
 - name: Install Docker
   hosts: test_servers
