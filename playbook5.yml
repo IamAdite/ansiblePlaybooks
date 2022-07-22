@@ -1,0 +1,52 @@
+
+---
+- name: Install Apache and Upload my Web Page
+  hosts: all
+  become: yes
+
+
+  vars:
+    src_file: ./index.html
+    dest_file: /var/www/html
+
+
+  tasks:
+  - name: Check and Print LINUX Version
+    debug: var=ansible_os_family
+
+  - block:  #======DEBIAN======
+    
+      - name: Install Apache Web Server for Debian
+        apt: name=apache2 state=latest
+
+      - name: Copy Index html from source server
+        copy: src={{ src_file }} dest={{ dest_file }} mode=0555
+        notify: Restart Apache Debian
+
+      - name: Start and Enable Apache Web Server for Debian
+        service: name=apache2 state=started enabled=yes
+    
+    when: ansible_os_family == "Debian"
+
+
+  - block:  #======REDHAT======
+
+      - name: Install Apache Web Server for Debian
+        apt: name=httpd state=latest
+
+      - name: Copy Index html from source server
+        copy: src={{ src_file }} dest={{ dest_file }} mode=0555
+        notify: Restart Apache RedHat
+
+      - name: Start and Enable Apache Web Server for Debian
+        service: name=httpd state=started enabled=yes
+
+    when: ansible_os_family == "RedHat"
+
+
+  handlers:
+  - name: Restart Apache RedHat
+    service: name=httpd state=restarted
+
+  - name: Restart Apache Debian
+    service: name=apache2 state=restarted

@@ -1,0 +1,112 @@
+
+---
+- name: Install Minecraft Server and Start it as service
+  hosts: minecraft_servers
+  become: yes
+
+  vars:
+    rcon.port: 25575
+    server-port: 25565
+    difficulty: hard
+    gamemode: survival
+    hardcore: false
+    enable-rcon: false
+    max-players: 20
+    rcon.password: pass
+    maxRam: 4G
+    minRam: 1G
+
+
+  tasks:
+  - name: Install openjdk
+    apt:
+      name: openjdk-17-jre-headless
+      state: latest
+
+  - name: Allow needed ports
+    ufw: 
+      default: allow
+      from_port: {{ server-port }}
+
+  - name: Download Minecraft Server
+    get_url:
+      url: https://launcher.mojang.com/v1/objects/e00c4052dac1d59a1188b2aa9d5a87113aaf1122/server.jar
+   
+  - name: Initial Launch
+    command: "java -Xms{{ minRam }} -Xmx{{ maxRam }} -jar server.jar nogui"
+ 
+  - name: Change eula.txt
+    replace:
+      path: ./eula.txt
+      regexp: '=false'
+      replace: '=true'
+
+  - name: Change server.properties
+    replace:
+      path: ./server.properties
+      regexp: 'difficulty=easy'
+      replace: 'difficulty={{ difficulty }}'
+    replace:
+      path: ./server.properties
+      regexp: 'gamemode=survival'
+      replace: 'gamemode={{ gamemode }}'
+    replace:
+      path: ./server.properties
+      regexp: 'rcon.port=25575'
+      replace: 'rcon.port={{ rcon.port }}'
+    replace:
+      path: ./server.properties
+      regexp: 'server-port=25575'
+      replace: 'server-port={{ server-port }}'
+    replace:
+      path: ./server.properties
+      regexp: 'hardcore=false'
+      replace: 'hardcore={{ hardcore }}'
+    replace:
+      path: ./server.properties
+      regexp: 'enable-rcon=false'
+      replace: 'enable-rcon={{ enable-rcon }}'
+    replace:
+      path: ./server.properties
+      regexp: 'rcon.password='
+      replace: 'rcon.password={{ rcon.password }}'
+
+  - name: Download and compile mcrcon
+    file:
+      path: ./tools
+      state: directory    
+    git:
+      repo: https://github.com/Tiiffi/mcrcon.git
+      dest: ./tools 
+      clone: yes 
+    apt:
+      name: gcc
+      state: latest
+    command: "gcc -std=gnu11 -pedantic -Wall -Wextra -O2 -s -o ./tools/mcrcon/mcrcon ./tools/mcrcon/mcrcon.c"
+  
+  - name: Create Service file
+    copy: 
+      dest: "/etc/systemd/system/minecraft.service"
+      content: |
+        [Unit]
+        Description=Minecraft Server 
+        After=network.target
+        [Service]
+        Nice=1
+        KillMode=none
+        SuccessExitStatus=0 1
+        ProtectHome=true
+        ProtectSystem=full
+        PrivateDevices=true
+        NoNewPrivileges=true
+        WorkingDirectory=/home/adite
+        ExecStart=/usr/bin/java -Xmx{{ maxRam }} -Xms{{ minRam }} -jar server.jar nogui
+        ExecStop=/home/adite/tools/mcrcon/mcrcon -H 127.0.0.1 -P {{ rcon.port }} -p {{ rcon.password }} stop
+        [Install]
+        WantedBy=multi-user.target
+
+  - name: Start Minecraft Service
+    systemd:
+      name: minecraft
+      state: started
+      enabled: yes

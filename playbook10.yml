@@ -1,0 +1,17 @@
+---
+- name: Ansible Error Handling
+  hosts: test_servers
+  any_errors_fatal: true
+  become: yes
+
+  tasks:
+  - name: Task 1
+    apt: name=tree state=latest
+    ignore_errors: yes
+
+  - name: Task 2
+    shell: cat ./file.txt
+    register: results
+    
+  - name: Task 3 
+    shell: echo SUCK COCK

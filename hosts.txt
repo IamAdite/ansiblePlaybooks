@@ -1,0 +1,12 @@
+[staging_servers]
+linux1 ansible_host=192.168.0.15 
+
+[prod_servers]
+linux2 ansible_host=192.168.0.16 
+
+[test_servers:children]
+staging_servers
+prod_servers
+
+[minecraft_servers]
+kolyanLinux ansible_host=109.108.241.52

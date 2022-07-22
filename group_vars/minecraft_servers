@@ -1,0 +1,4 @@
+---
+ansible_user        : minecrafter 
+ansible_password    : fpc6iQsMej0V 
+ansible_become_pass : fpc6iQsMej0V
